@@ -6,7 +6,9 @@
     position: relative;
     width: 100%;
     {% if section.settings.banner_height == 'full_screen' %}
-    height: 100vh;
+      height: 100vh;
+    {% elsif section.settings.banner_height == 'custom' %}
+      height: {{ section.settings.custom_height }}px;
     {% endif %}
   }
 
@@ -204,12 +206,27 @@
           "label": "Auto"
         },
         {
+          "value": "custom",
+          "label": "Custom height"
+        },
+        {
           "value": "full_screen",
           "label": "Full screen"
         }
       ],
       "default": "auto",
       "label": "Banner height"
+    },
+    {
+      "type": "range",
+      "id": "custom_height",
+      "min": 300,
+      "max": 800,
+      "step": 10,
+      "unit": "px",
+      "label": "Custom height",
+      "default": 500,
+      "info": "Only applies when banner height is set to 'Custom height'"
     },
     {
       "type": "select",
