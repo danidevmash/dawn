@@ -1,0 +1,234 @@
+{% schema %}
+{
+  "name": "Hero Video",
+  "settings": [
+    {
+      "type": "video",
+      "id": "video",
+      "label": "Background Video",
+      "info": "Upload or enter video URL"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Hero Video Title"
+    },
+    {
+      "type": "richtext",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "<p>Hero video subtitle text</p>"
+    },
+    {
+      "type": "select",
+      "id": "text_align",
+      "label": "Text Alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text Color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "label": "Title Size",
+      "min": 16,
+      "max": 72,
+      "step": 2,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "subtitle_size",
+      "label": "Subtitle Size",
+      "min": 12,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "select",
+      "id": "content_type",
+      "label": "Content Type",
+      "options": [
+        {
+          "value": "text",
+          "label": "Text"
+        },
+        {
+          "value": "logo",
+          "label": "Logo"
+        }
+      ],
+      "default": "text"
+    },
+    {
+      "type": "image_picker",
+      "id": "logo",
+      "label": "Logo Image",
+      "info": "Displayed when content type is set to logo"
+    },
+    {
+      "type": "select",
+      "id": "text_effect",
+      "label": "Text Effect",
+      "options": [
+        {
+          "value": "none",
+          "label": "None"
+        },
+        {
+          "value": "fade-in",
+          "label": "Fade In"
+        },
+        {
+          "value": "slide-up",
+          "label": "Slide Up"
+        },
+        {
+          "value": "zoom-in",
+          "label": "Zoom In"
+        }
+      ],
+      "default": "none"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero Video",
+      "category": "Image"
+    }
+  ]
+}
+{% endschema %}
+
+<style>
+  .hero-video {
+    position: relative;
+    height: 100vh;
+    overflow: hidden;
+  }
+  
+  .hero-video video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+  }
+  
+  .hero-content {
+    position: absolute;
+    z-index: 2;
+    width: 100%;
+    padding: 20px;
+    color: {{ section.settings.text_color }};
+    text-align: {{ section.settings.text_align }};
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  
+  .hero-title {
+    font-size: {{ section.settings.title_size }}px;
+    margin-bottom: 20px;
+  }
+  
+  .hero-subtitle {
+    font-size: {{ section.settings.subtitle_size }}px;
+  }
+
+  /* Text Effects */
+  .fade-in {
+    opacity: 0;
+    animation: fadeIn 1s ease-in-out forwards;
+  }
+
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
+  }
+
+  .slide-up {
+    transform: translateY(50px);
+    opacity: 0;
+    animation: slideUp 1s ease-in-out forwards;
+  }
+
+  @keyframes slideUp {
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .zoom-in {
+    transform: scale(0.8);
+    opacity: 0;
+    animation: zoomIn 1s ease-in-out forwards;
+  }
+
+  @keyframes zoomIn {
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .hero-logo {
+    max-width: 300px;
+    width: 100%;
+    height: auto;
+  }
+</style>
+
+<div class="hero-video">
+  {% if section.settings.video %}
+    <video autoplay muted loop playsinline>
+      <source src="{{ section.settings.video }}" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+  {% endif %}
+  
+  <div class="hero-content">
+    {% if section.settings.content_type == 'text' %}
+      <h1 class="hero-title {{ section.settings.text_effect }}">
+        {{ section.settings.title }}
+      </h1>
+      <div class="hero-subtitle {{ section.settings.text_effect }}">
+        {{ section.settings.subtitle }}
+      </div>
+    {% else %}
+      {% if section.settings.logo %}
+        <img 
+          src="{{ section.settings.logo | img_url: '800x' }}" 
+          alt="{{ section.settings.title | escape }}"
+          class="hero-logo {{ section.settings.text_effect }}"
+        >
+      {% endif %}
+    {% endif %}
+  </div>
+</div>

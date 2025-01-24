@@ -1,0 +1,363 @@
+{{ 'video-section.css' | asset_url | stylesheet_tag }}
+{{ 'component-deferred-media.css' | asset_url | stylesheet_tag }}
+
+{%- style -%}
+  .video-banner-{{ section.id }} {
+    position: relative;
+    width: 100%;
+    {% if section.settings.banner_height == 'full_screen' %}
+    height: 100vh;
+    {% endif %}
+  }
+
+  .video-banner-{{ section.id }} .video-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .video-banner-{{ section.id }} .video-wrapper video {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .video-banner-{{ section.id }} .video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba({{ section.settings.background_color.rgb }}, {{ section.settings.overlay_opacity | divided_by: 100.0 }});
+  }
+
+  .video-banner-{{ section.id }} .banner-content {
+    position: absolute;
+    {% case section.settings.text_position %}
+      {% when 'middle_center' %}
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+      {% when 'middle_left' %}
+        top: 50%;
+        left: 0;
+        transform: translateY(-50%);
+        text-align: left;
+      {% when 'middle_right' %}
+        top: 50%;
+        right: 0;
+        transform: translateY(-50%);
+        text-align: right;
+    {% endcase %}
+    color: {{ section.settings.text_color }};
+    max-width: {{ section.settings.text_width }}%;
+    padding: {{ section.settings.vertical_spacing }}px 0;
+  }
+
+  .video-banner-{{ section.id }} .banner-content .heading {
+    margin-bottom: {{ section.settings.vertical_spacing }}px;
+  }
+
+  @media screen and (min-width: 750px) {
+    .video-banner-{{ section.id }} .video-wrapper {
+      margin: {{ section.settings.desktop_margin }}px;
+    }
+
+    .video-banner-{{ section.id }} .video-wrapper video {
+      {% if section.settings.video_size == '50' %}
+        width: 50%;
+        {% case section.settings.video_position %}
+          {% when 'left' %}
+            left: 0;
+          {% when 'center' %}
+            left: 25%;
+          {% when 'right' %}
+            right: 0;
+        {% endcase %}
+      {% endif %}
+    }
+
+    .mobile-video {
+      display: none;
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .video-banner-{{ section.id }} .video-wrapper {
+      margin: {{ section.settings.mobile_margin }}px;
+    }
+
+    .desktop-video {
+      display: none;
+    }
+  }
+
+  {% if section.settings.fade_in_text %}
+    .video-banner-{{ section.id }} .banner-content {
+      opacity: 0;
+      animation: fadeIn 1s ease-in forwards;
+    }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+  {% endif %}
+
+  {% if section.settings.enable_parallax %}
+    .video-banner-{{ section.id }} .banner-content {
+      transition: transform 0.5s ease-out;
+    }
+  {% endif %}
+{%- endstyle -%}
+
+<div class="video-banner-{{ section.id }}">
+  <div class="video-wrapper">
+    {% if section.settings.video != blank %}
+      {{
+        section.settings.video
+        | video_tag: class: 'desktop-video', autoplay: true, loop: true, muted: true, playsinline: true
+      }}
+    {% endif %}
+
+    {% if section.settings.mobile_video != blank %}
+      {{
+        section.settings.mobile_video
+        | video_tag: class: 'mobile-video', autoplay: true, loop: true, muted: true, playsinline: true
+      }}
+    {% endif %}
+
+    {% if section.settings.fallback_image != blank %}
+      {{
+        section.settings.fallback_image
+        | image_url: width: 3000
+        | image_tag: loading: 'lazy', class: 'fallback-image', sizes: '100vw'
+      }}
+    {% endif %}
+  </div>
+
+  {% if section.settings.overlay_opacity > 0 %}
+    <div class="video-overlay"></div>
+  {% endif %}
+
+  {% if section.settings.heading != blank or section.settings.text != blank %}
+    <div class="banner-content">
+      {%- if section.settings.heading != blank -%}
+        <h2 class="heading {{ section.settings.heading_size }}">{{ section.settings.heading }}</h2>
+      {%- endif -%}
+
+      {%- if section.settings.text != blank -%}
+        <div class="text">{{ section.settings.text }}</div>
+      {%- endif -%}
+    </div>
+  {% endif %}
+</div>
+
+{% schema %}
+{
+  "name": "Video Banner",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Video"
+    },
+    {
+      "type": "video",
+      "id": "video",
+      "label": "Video"
+    },
+    {
+      "type": "video",
+      "id": "mobile_video",
+      "label": "Mobile video",
+      "info": "Optional. Add a video optimized for mobile screen size. If left blank, the main video will load on all screen sizes."
+    },
+    {
+      "type": "image_picker",
+      "id": "fallback_image",
+      "label": "Fallback image",
+      "info": "Fallback image will load in cases when the video cannot load, such as mobile devices on low power mode."
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Overlay darkness",
+      "default": 0
+    },
+    {
+      "type": "select",
+      "id": "banner_height",
+      "options": [
+        {
+          "value": "auto",
+          "label": "Auto"
+        },
+        {
+          "value": "full_screen",
+          "label": "Full screen"
+        }
+      ],
+      "default": "auto",
+      "label": "Banner height"
+    },
+    {
+      "type": "select",
+      "id": "video_size",
+      "options": [
+        {
+          "value": "100",
+          "label": "100%"
+        },
+        {
+          "value": "50",
+          "label": "50%"
+        }
+      ],
+      "default": "100",
+      "label": "Video size",
+      "info": "Applies to desktop only. On mobile, video size is optimized to fit the banner."
+    },
+    {
+      "type": "select",
+      "id": "video_position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center",
+      "label": "Video position",
+      "info": "Applies to desktop only, and only has an effect if video size is set to 50%"
+    },
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text"
+    },
+    {
+      "type": "select",
+      "id": "text_position",
+      "options": [
+        {
+          "value": "middle_left",
+          "label": "Middle left"
+        },
+        {
+          "value": "middle_center",
+          "label": "Middle center"
+        },
+        {
+          "value": "middle_right",
+          "label": "Middle right"
+        }
+      ],
+      "default": "middle_center",
+      "label": "Text position"
+    },
+    {
+      "type": "range",
+      "id": "text_width",
+      "min": 20,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "label": "Text width",
+      "default": 100
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "vertical_spacing",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "label": "Vertical spacing",
+      "default": 10
+    },
+    {
+      "type": "checkbox",
+      "id": "fade_in_text",
+      "label": "Fade in text",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_parallax",
+      "label": "Parallax text effects on scroll",
+      "default": false,
+      "info": "Should only be used if the banner is positioned at the top of the page."
+    },
+    {
+      "type": "header",
+      "content": "Margins"
+    },
+    {
+      "type": "range",
+      "id": "mobile_margin",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "label": "Mobile margin",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "desktop_margin",
+      "min": 0,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "label": "Desktop margin",
+      "default": 0
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#000000"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Video Banner",
+      "settings": {}
+    }
+  ]
+}
+{% endschema %}

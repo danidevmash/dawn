@@ -18,6 +18,11 @@
     margin-left: -1.2rem;
   }
 
+  .header {
+    background-color: {{ section.settings.background_color | color_modify: 'alpha', section.settings.background_opacity | divided_by: 100.0 }};
+    transition: background-color 0.3s ease;
+  }
+
   {%- if section.settings.sticky_header_type == 'reduce-logo-size' -%}
     .scrolled-past-header .header__heading-logo-wrapper {
       width: 75%;
@@ -75,6 +80,8 @@
 {%- style -%}
   .header {
     padding: {{ section.settings.padding_top | times: 0.5 | round: 0 }}px 3rem {{ section.settings.padding_bottom | times: 0.5 | round: 0 }}px 3rem;
+    background-color: rgba({{ section.settings.background_color.rgb }}, {{ section.settings.background_opacity | divided_by: 100.0 }});
+    transition: background-color 0.3s ease;
   }
 
   .section-header {
@@ -106,15 +113,7 @@
   endfor
 -%}
 
-{% liquid
-  assign header_tag = 'div'
-
-  if section.settings.sticky_header_type != 'none'
-    assign header_tag = 'sticky-header'
-  endif
-%}
-
-<{{ header_tag }} {% if header_tag == 'sticky-header' %}data-sticky-type="{{ section.settings.sticky_header_type }}"{% endif %} class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}">
+<{% if section.settings.sticky_header_type != 'none' %}sticky-header data-sticky-type="{{ section.settings.sticky_header_type }}"{% else %}div{% endif %} class="header-wrapper color-{{ section.settings.color_scheme }} gradient{% if section.settings.show_line_separator %} header-wrapper--border-bottom{% endif %}">
   {%- liquid
     assign social_links = false
     assign localization_forms = false
@@ -288,7 +287,7 @@
       </a>
     </div>
   </header>
-</{{ header_tag }}>
+</{% if section.settings.sticky_header_type != 'none' %}sticky-header{% else %}div{% endif %}>
 
 {%- if settings.cart_type == "notification" -%}
   {%- render 'cart-notification', color_scheme: section.settings.color_scheme, desktop_menu_type: section.settings.menu_type_desktop -%}
@@ -536,6 +535,26 @@
     },
     {
       "type": "header",
+      "content": "Background"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "background_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Background opacity",
+      "default": 100
+    },
+    {
+      "type": "header",
       "content": "t:sections.header.settings.header__1.content"
     },
     {
@@ -558,7 +577,7 @@
     {
       "type": "checkbox",
       "id": "enable_country_selector",
-      "default": true,
+      "default": false,
       "label": "t:sections.header.settings.enable_country_selector.label"
     },
     {
@@ -569,7 +588,7 @@
     {
       "type": "checkbox",
       "id": "enable_language_selector",
-      "default": true,
+      "default": false,
       "label": "t:sections.header.settings.enable_language_selector.label"
     },
     {
